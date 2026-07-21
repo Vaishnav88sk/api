@@ -148,6 +148,25 @@ var _ = ginkgo.Describe("ManagedCluster v1 Enhanced API test", func() {
 			gomega.Expect(createdCluster.Spec.ManagedClusterClientConfigs[0].URL).Should(gomega.Equal("https://example.com:6443"))
 		})
 
+		ginkgo.It("should reject HTTPS URL without host", func() {
+			managedCluster := &clusterv1.ManagedCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: clusterName,
+				},
+				Spec: clusterv1.ManagedClusterSpec{
+					HubAcceptsClient: true,
+					ManagedClusterClientConfigs: []clusterv1.ClientConfig{
+						{
+							URL: "https://",
+						},
+					},
+				},
+			}
+
+			_, err := hubClusterClient.ClusterV1().ManagedClusters().Create(context.TODO(), managedCluster, metav1.CreateOptions{})
+			gomega.Expect(err).To(gomega.HaveOccurred())
+		})
+
 		ginkgo.It("should accept valid HTTPS URL", func() {
 			managedCluster := &clusterv1.ManagedCluster{
 				ObjectMeta: metav1.ObjectMeta{
